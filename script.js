@@ -46,6 +46,24 @@ function init()
         end: (x, y) => {}
     };
 
+    const ellipse = {
+        begin: (x, y) => {
+            history.save();
+        },
+
+        move: (x, y) => {
+            history.restore();
+            history.save();
+            ctx.beginPath();
+            const cx = (x + toolBegin.x) / 2;
+            const cy = (y + toolBegin.y) / 2;
+            ctx.ellipse(cx, cy, Math.abs(x - cx), Math.abs(y - cy), 0, 0, 2 * Math.PI);
+            ctx.stroke();
+        },
+
+        end: (x, y) => {}
+    };
+
     const toolBegin = {x: null, y: null};
     let tool = scribble;
 
@@ -80,6 +98,9 @@ function init()
         }
         else if (e.code === "KeyR") {
             tool = rect;
+        }
+        else if (e.code === "KeyE") {
+            tool = ellipse;
         }
     };
 
