@@ -14,43 +14,25 @@ function init()
     const history = makeHistory(ctx);
 
     const scribble = {
-        begin: (x, y) => {
-            history.save();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        },
-
         move: (x, y) => {
+            ctx.beginPath();
+            ctx.moveTo(toolBegin.x, toolBegin.y);
             ctx.lineTo(x, y);
             ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y);
-        },
-
-        end: (x, y) => {
-            ctx.stroke();
+            toolBegin.x = x;
+            toolBegin.y = y;
         }
     };
 
     const rect = {
-        begin: (x, y) => {
-            history.save();
-        },
-
         move: (x, y) => {
             history.restore();
             history.save();
             ctx.strokeRect(toolBegin.x, toolBegin.y, x - toolBegin.x, y - toolBegin.y);
-        },
-
-        end: (x, y) => {}
+        }
     };
 
     const ellipse = {
-        begin: (x, y) => {
-            history.save();
-        },
-
         move: (x, y) => {
             history.restore();
             history.save();
@@ -59,9 +41,18 @@ function init()
             const cy = (y + toolBegin.y) / 2;
             ctx.ellipse(cx, cy, Math.abs(x - cx), Math.abs(y - cy), 0, 0, 2 * Math.PI);
             ctx.stroke();
-        },
+        }
+    };
 
-        end: (x, y) => {}
+    const line = {
+        move: (x, y) => {
+            history.restore();
+            history.save();
+            ctx.beginPath();
+            ctx.moveTo(toolBegin.x, toolBegin.y);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
     };
 
     const toolBegin = {x: null, y: null};
@@ -71,20 +62,25 @@ function init()
         if (e.button === 0) {
             toolBegin.x = e.offsetX;
             toolBegin.y = e.offsetY;
-            tool.begin(e.offsetX, e.offsetY);
             isButtonPressed = true;
+            history.save();
+            if (tool.begin !== undefined) {
+                tool.begin(e.offsetX, e.offsetY);
+            }
         }
     };
 
     const mouseup = (e) => {
         if (e.button === 0) {
-            tool.end(e.offsetX, e.offsetY);
+            if (tool.end !== undefined) {
+                tool.end(e.offsetX, e.offsetY);
+            }
             isButtonPressed = false;
         }
     };
 
     const mousemove = (e) => {
-        if (isButtonPressed) {
+        if (isButtonPressed && tool.move !== undefined) {
             tool.move(e.offsetX, e.offsetY);
         }
     };
@@ -101,6 +97,9 @@ function init()
         }
         else if (e.code === "KeyE") {
             tool = ellipse;
+        }
+        else if (e.code === "KeyL") {
+            tool = line;
         }
     };
 
