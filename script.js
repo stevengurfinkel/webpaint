@@ -13,32 +13,73 @@ function init()
     let isButtonPressed = false;
     const history = makeHistory(ctx);
 
+    const scribble = {
+        begin: (x, y) => {
+            history.save();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        },
+
+        move: (x, y) => {
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        },
+
+        end: (x, y) => {
+            ctx.stroke();
+        }
+    };
+
+    const rect = {
+        begin: (x, y) => {
+            history.save();
+        },
+
+        move: (x, y) => {
+            history.restore();
+            history.save();
+            ctx.strokeRect(toolBegin.x, toolBegin.y, x - toolBegin.x, y - toolBegin.y);
+        },
+
+        end: (x, y) => {}
+    };
+
+    const toolBegin = {x: null, y: null};
+    let tool = scribble;
+
     const mousedown = (e) => {
         if (e.button === 0) {
-            history.save();
-            ctx.moveTo(e.offsetX, e.offsetY);
+            toolBegin.x = e.offsetX;
+            toolBegin.y = e.offsetY;
+            tool.begin(e.offsetX, e.offsetY);
             isButtonPressed = true;
         }
     };
 
     const mouseup = (e) => {
         if (e.button === 0) {
+            tool.end(e.offsetX, e.offsetY);
             isButtonPressed = false;
         }
     };
 
     const mousemove = (e) => {
         if (isButtonPressed) {
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
+            tool.move(e.offsetX, e.offsetY);
         }
     };
 
     const keydown = (e) => {
         if (e.ctrlKey && e.code === "KeyZ") {
             history.restore();
+        }
+        else if (e.code === "KeyS") {
+            tool = scribble;
+        }
+        else if (e.code === "KeyR") {
+            tool = rect;
         }
     };
 
