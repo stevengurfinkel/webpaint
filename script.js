@@ -48,7 +48,9 @@ function init()
         const move = (x, y) => {
             history.restore();
             history.save();
+            ctx.beginPath();
             draw(startX, startY, x, y);
+            ctx.stroke();
         };
 
         return {begin, move};
@@ -59,18 +61,14 @@ function init()
     };
 
     const ellipse = (x1, y1, x2, y2) => {
-        ctx.beginPath();
         const cx = (x1 + x2) / 2;
         const cy = (y1 + y2) / 2;
         ctx.ellipse(cx, cy, Math.abs(x2 - cx), Math.abs(y2 - cy), 0, 0, 2 * Math.PI);
-        ctx.stroke();
     };
 
     const line = (x1, y1, x2, y2) => {
-        ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
-        ctx.stroke();
     };
 
     let tool = pen();
