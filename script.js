@@ -14,6 +14,9 @@ function init()
     const history = makeHistory(ctx);
 
     const pen = {
+        begin: (x, y) => {
+            history.save();
+        },
         move: (x, y) => {
             ctx.beginPath();
             ctx.moveTo(toolBegin.x, toolBegin.y);
@@ -25,6 +28,9 @@ function init()
     };
 
     const rect = {
+        begin: (x, y) => {
+            history.save();
+        },
         move: (x, y) => {
             history.restore();
             history.save();
@@ -33,6 +39,9 @@ function init()
     };
 
     const ellipse = {
+        begin: (x, y) => {
+            history.save();
+        },
         move: (x, y) => {
             history.restore();
             history.save();
@@ -45,6 +54,9 @@ function init()
     };
 
     const line = {
+        begin: (x, y) => {
+            history.save();
+        },
         move: (x, y) => {
             history.restore();
             history.save();
@@ -63,7 +75,6 @@ function init()
             toolBegin.x = e.offsetX;
             toolBegin.y = e.offsetY;
             isButtonPressed = true;
-            history.save();
             if (tool.begin !== undefined) {
                 tool.begin(e.offsetX, e.offsetY);
             }
