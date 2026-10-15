@@ -13,7 +13,7 @@ function init()
     let isButtonPressed = false;
     const history = makeHistory(ctx);
 
-    const scribble = {
+    const pen = {
         move: (x, y) => {
             ctx.beginPath();
             ctx.moveTo(toolBegin.x, toolBegin.y);
@@ -56,7 +56,7 @@ function init()
     };
 
     const toolBegin = {x: null, y: null};
-    let tool = scribble;
+    let tool = pen;
 
     const mousedown = (e) => {
         if (e.button === 0) {
@@ -89,8 +89,8 @@ function init()
         if (e.ctrlKey && e.code === "KeyZ") {
             history.restore();
         }
-        else if (e.code === "KeyS") {
-            tool = scribble;
+        else if (e.code === "KeyP") {
+            tool = pen;
         }
         else if (e.code === "KeyR") {
             tool = rect;
@@ -170,7 +170,7 @@ function makeHistory(ctx)
     };
 
     // return public methods
-    return {save: save, restore: restore};
+    return {save, restore};
 }
 
 function assert(cond)
