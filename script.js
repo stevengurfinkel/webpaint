@@ -67,8 +67,6 @@ function init()
     };
 
     const line = (x1, y1, x2, y2) => {
-        history.restore();
-        history.save();
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
