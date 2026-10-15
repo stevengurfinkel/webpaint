@@ -13,67 +13,72 @@ function init()
     let isButtonPressed = false;
     const history = makeHistory(ctx);
 
-    const pen = {
-        begin: (x, y) => {
+    const pen = () => {
+        let startX = null;
+        let startY = null;
+
+        const begin = (x, y) => {
             history.save();
-        },
-        move: (x, y) => {
+            startX = x;
+            startY = y;
+        };
+
+        const move = (x, y) => {
             ctx.beginPath();
-            ctx.moveTo(toolBegin.x, toolBegin.y);
+            ctx.moveTo(startX, startY);
             ctx.lineTo(x, y);
             ctx.stroke();
-            toolBegin.x = x;
-            toolBegin.y = y;
-        }
+            startX = x;
+            startY = y;
+        };
+
+        return {begin, move};
     };
 
-    const rect = {
-        begin: (x, y) => {
+    const shape = (draw) => {
+        let startX = null;
+        let startY = null;
+
+        const begin = (x, y) => {
             history.save();
-        },
-        move: (x, y) => {
+            startX = x;
+            startY = y;
+        };
+
+        const move = (x, y) => {
             history.restore();
             history.save();
-            ctx.strokeRect(toolBegin.x, toolBegin.y, x - toolBegin.x, y - toolBegin.y);
-        }
+            draw(startX, startY, x, y);
+        };
+
+        return {begin, move};
     };
 
-    const ellipse = {
-        begin: (x, y) => {
-            history.save();
-        },
-        move: (x, y) => {
-            history.restore();
-            history.save();
-            ctx.beginPath();
-            const cx = (x + toolBegin.x) / 2;
-            const cy = (y + toolBegin.y) / 2;
-            ctx.ellipse(cx, cy, Math.abs(x - cx), Math.abs(y - cy), 0, 0, 2 * Math.PI);
-            ctx.stroke();
-        }
+    const rect = (x1, y1, x2, y2) => {
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
     };
 
-    const line = {
-        begin: (x, y) => {
-            history.save();
-        },
-        move: (x, y) => {
-            history.restore();
-            history.save();
-            ctx.beginPath();
-            ctx.moveTo(toolBegin.x, toolBegin.y);
-            ctx.lineTo(x, y);
-            ctx.stroke();
-        }
+    const ellipse = (x1, y1, x2, y2) => {
+        ctx.beginPath();
+        const cx = (x1 + x2) / 2;
+        const cy = (y1 + y2) / 2;
+        ctx.ellipse(cx, cy, Math.abs(x2 - cx), Math.abs(y2 - cy), 0, 0, 2 * Math.PI);
+        ctx.stroke();
     };
 
-    const toolBegin = {x: null, y: null};
-    let tool = pen;
+    const line = (x1, y1, x2, y2) => {
+        history.restore();
+        history.save();
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    };
+
+    let tool = pen();
 
     const mousedown = (e) => {
         if (e.button === 0) {
-            toolBegin.x = e.offsetX;
-            toolBegin.y = e.offsetY;
             isButtonPressed = true;
             if (tool.begin !== undefined) {
                 tool.begin(e.offsetX, e.offsetY);
@@ -101,16 +106,16 @@ function init()
             history.restore();
         }
         else if (e.code === "KeyP") {
-            tool = pen;
+            tool = pen();
         }
         else if (e.code === "KeyR") {
-            tool = rect;
+            tool = shape(rect);
         }
         else if (e.code === "KeyE") {
-            tool = ellipse;
+            tool = shape(ellipse);
         }
         else if (e.code === "KeyL") {
-            tool = line;
+            tool = shape(line);
         }
     };
 
