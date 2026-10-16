@@ -16,7 +16,6 @@ function init()
         let start = null;
 
         const down = (p) => {
-            history.save();
             start = p;
         };
 
@@ -28,26 +27,34 @@ function init()
             start = p;
         };
 
-        return {down, move};
+        const up = (p) => {
+            complete();
+        };
+
+        return {down, move, up};
     };
 
     const shape = (draw) => {
-        let start = null;
+        return () => {
+            let start = null;
 
-        const down = (p) => {
-            history.save();
-            start = p;
+            const down = (p) => {
+                start = p;
+            };
+
+            const move = (p) => {
+                reset();
+                ctx.beginPath();
+                draw(makeRect(start, p));
+                ctx.stroke();
+            };
+
+            const up = (p) => {
+                complete();
+            };
+
+            return {down, move, up};
         };
-
-        const move = (p) => {
-            history.restore();
-            history.save();
-            ctx.beginPath();
-            draw(makeRect(start, p));
-            ctx.stroke();
-        };
-
-        return {down, move};
     };
 
     const rect = (r) => {
@@ -65,11 +72,33 @@ function init()
         ctx.lineTo(...r.p2.params);
     };
 
-    let tool = pen();
+    let tool = null;
+    let toolFn = pen;
+
+    const reset = () => {
+        assert(tool !== null);
+        history.restore();
+        history.save();
+    };
+
+    const complete = () => {
+        assert(tool !== null);
+        tool = null;
+    };
+
+    const abort = () => {
+        assert(tool !== null);
+        history.restore();
+        tool = null;
+    };
 
     const mousedown = (e) => {
         if (e.button === 0) {
             isButtonPressed = true;
+            if (tool === null) {
+                tool = toolFn();
+                history.save();
+            }
             if (tool.down !== undefined) {
                 tool.down(makePoint(e.offsetX, e.offsetY));
             }
@@ -78,7 +107,7 @@ function init()
 
     const mouseup = (e) => {
         if (e.button === 0) {
-            if (tool.up !== undefined) {
+            if (tool !== null && tool.up !== undefined) {
                 tool.up(makePoint(e.offsetX, e.offsetY));
             }
             isButtonPressed = false;
@@ -86,7 +115,7 @@ function init()
     };
 
     const mousemove = (e) => {
-        if (isButtonPressed && tool.move !== undefined) {
+        if (isButtonPressed && tool !== null && tool.move !== undefined) {
             tool.move(makePoint(e.offsetX, e.offsetY));
         }
     };
@@ -96,16 +125,20 @@ function init()
             history.restore();
         }
         else if (e.code === "KeyP") {
-            tool = pen();
+            toolFn = pen;
         }
         else if (e.code === "KeyR") {
-            tool = shape(rect);
+            toolFn = shape(rect);
         }
         else if (e.code === "KeyE") {
-            tool = shape(ellipse);
+            toolFn = shape(ellipse);
         }
         else if (e.code === "KeyL") {
-            tool = shape(line);
+            toolFn = shape(line);
+        }
+
+        if (tool !== null) {
+            abort();
         }
     };
 
