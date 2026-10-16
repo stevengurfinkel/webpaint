@@ -8,7 +8,6 @@ function init()
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.strokeStyle = "white";
-    ctx.beginPath();
 
     let isButtonPressed = false;
     const history = makeHistory(ctx);
@@ -16,7 +15,7 @@ function init()
     const pen = () => {
         let start = null;
 
-        const begin = (p) => {
+        const down = (p) => {
             history.save();
             start = p;
         };
@@ -29,13 +28,13 @@ function init()
             start = p;
         };
 
-        return {begin, move};
+        return {down, move};
     };
 
     const shape = (draw) => {
         let start = null;
 
-        const begin = (p) => {
+        const down = (p) => {
             history.save();
             start = p;
         };
@@ -48,7 +47,7 @@ function init()
             ctx.stroke();
         };
 
-        return {begin, move};
+        return {down, move};
     };
 
     const rect = (r) => {
@@ -71,16 +70,16 @@ function init()
     const mousedown = (e) => {
         if (e.button === 0) {
             isButtonPressed = true;
-            if (tool.begin !== undefined) {
-                tool.begin(makePoint(e.offsetX, e.offsetY));
+            if (tool.down !== undefined) {
+                tool.down(makePoint(e.offsetX, e.offsetY));
             }
         }
     };
 
     const mouseup = (e) => {
         if (e.button === 0) {
-            if (tool.end !== undefined) {
-                tool.end(makePoint(e.offsetX, e.offsetY));
+            if (tool.up !== undefined) {
+                tool.up(makePoint(e.offsetX, e.offsetY));
             }
             isButtonPressed = false;
         }
