@@ -9,10 +9,7 @@ function init()
 
     ctx.strokeStyle = "white";
 
-    let isButtonPressed = false;
-    const history = makeHistory(ctx);
-
-    const pen = () => {
+    const pen = (actions) => {
         let start = null;
 
         const down = (p) => {
@@ -28,14 +25,14 @@ function init()
         };
 
         const up = (p) => {
-            complete();
+            actions.complete();
         };
 
         return {down, move, up};
     };
 
     const shape = (draw) => {
-        return () => {
+        return (actions) => {
             let start = null;
 
             const down = (p) => {
@@ -43,14 +40,14 @@ function init()
             };
 
             const move = (p) => {
-                reset();
+                actions.reset();
                 ctx.beginPath();
                 draw(makeRect(start, p));
                 ctx.stroke();
             };
 
             const up = (p) => {
-                complete();
+                actions.complete();
             };
 
             return {down, move, up};
@@ -72,82 +69,10 @@ function init()
         ctx.lineTo(...r.p2.params);
     };
 
-    let tool = null;
-    let toolFn = pen;
-
-    const reset = () => {
-        assert(tool !== null);
-        history.restore();
-        history.save();
-    };
-
-    const complete = () => {
-        assert(tool !== null);
-        tool = null;
-    };
-
-    const abort = () => {
-        assert(tool !== null);
-        history.restore();
-        tool = null;
-    };
-
-    const mousedown = (e) => {
-        if (e.button === 0) {
-            isButtonPressed = true;
-            if (tool === null) {
-                tool = toolFn();
-                history.save();
-            }
-            if (tool.down !== undefined) {
-                tool.down(makePoint(e.offsetX, e.offsetY));
-            }
-        }
-    };
-
-    const mouseup = (e) => {
-        if (e.button === 0) {
-            if (tool !== null && tool.up !== undefined) {
-                tool.up(makePoint(e.offsetX, e.offsetY));
-            }
-            isButtonPressed = false;
-        }
-    };
-
-    const mousemove = (e) => {
-        if (isButtonPressed && tool !== null && tool.move !== undefined) {
-            tool.move(makePoint(e.offsetX, e.offsetY));
-        }
-    };
-
-    const keydown = (e) => {
-        if (e.ctrlKey && e.code === "KeyZ") {
-            history.restore();
-        }
-        else if (e.code === "KeyP") {
-            toolFn = pen;
-        }
-        else if (e.code === "KeyR") {
-            toolFn = shape(rect);
-        }
-        else if (e.code === "KeyE") {
-            toolFn = shape(ellipse);
-        }
-        else if (e.code === "KeyL") {
-            toolFn = shape(line);
-        }
-
-        if (tool !== null) {
-            abort();
-        }
-    };
-
-    const register = (str, fn, element = canvas) => {
-        element.addEventListener(str, (e) => { fn(e); e.preventDefault(); });
-    };
-
-    register("mousedown", mousedown);
-    register("mouseup", mouseup);
-    register("mousemove", mousemove);
-    register("keydown", keydown, window);
+    dispatch(ctx,
+             pen,
+             {KeyP: pen,
+              KeyR: shape(rect),
+              KeyE: shape(ellipse),
+              KeyL: shape(line)});
 }
