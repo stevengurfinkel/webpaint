@@ -14,61 +14,56 @@ function init()
     const history = makeHistory(ctx);
 
     const pen = () => {
-        let startX = null;
-        let startY = null;
+        let start = null;
 
-        const begin = (x, y) => {
+        const begin = (p) => {
             history.save();
-            startX = x;
-            startY = y;
+            start = p;
         };
 
-        const move = (x, y) => {
+        const move = (p) => {
             ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(x, y);
+            ctx.moveTo(...start.params);
+            ctx.lineTo(...p.params);
             ctx.stroke();
-            startX = x;
-            startY = y;
+            start = p;
         };
 
         return {begin, move};
     };
 
     const shape = (draw) => {
-        let startX = null;
-        let startY = null;
+        let start = null;
 
-        const begin = (x, y) => {
+        const begin = (p) => {
             history.save();
-            startX = x;
-            startY = y;
+            start = p;
         };
 
-        const move = (x, y) => {
+        const move = (p) => {
             history.restore();
             history.save();
             ctx.beginPath();
-            draw(startX, startY, x, y);
+            draw(makeRect(start, p));
             ctx.stroke();
         };
 
         return {begin, move};
     };
 
-    const rect = (x1, y1, x2, y2) => {
-        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+    const rect = (r) => {
+        ctx.strokeRect(...r.params);
     };
 
-    const ellipse = (x1, y1, x2, y2) => {
-        const cx = (x1 + x2) / 2;
-        const cy = (y1 + y2) / 2;
-        ctx.ellipse(cx, cy, Math.abs(x2 - cx), Math.abs(y2 - cy), 0, 0, 2 * Math.PI);
+    const ellipse = (r) => {
+        const cx = (r.lo.x + r.hi.x) / 2;
+        const cy = (r.lo.y + r.hi.y) / 2;
+        ctx.ellipse(cx, cy, r.width / 2, r.height / 2, 0, 0, 2 * Math.PI);
     };
 
-    const line = (x1, y1, x2, y2) => {
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
+    const line = (r) => {
+        ctx.moveTo(...r.p1.params);
+        ctx.lineTo(...r.p2.params);
     };
 
     let tool = pen();
@@ -77,7 +72,7 @@ function init()
         if (e.button === 0) {
             isButtonPressed = true;
             if (tool.begin !== undefined) {
-                tool.begin(e.offsetX, e.offsetY);
+                tool.begin(makePoint(e.offsetX, e.offsetY));
             }
         }
     };
@@ -85,7 +80,7 @@ function init()
     const mouseup = (e) => {
         if (e.button === 0) {
             if (tool.end !== undefined) {
-                tool.end(e.offsetX, e.offsetY);
+                tool.end(makePoint(e.offsetX, e.offsetY));
             }
             isButtonPressed = false;
         }
@@ -93,7 +88,7 @@ function init()
 
     const mousemove = (e) => {
         if (isButtonPressed && tool.move !== undefined) {
-            tool.move(e.offsetX, e.offsetY);
+            tool.move(makePoint(e.offsetX, e.offsetY));
         }
     };
 
@@ -183,6 +178,24 @@ function makeHistory(ctx)
 
     // return public methods
     return {save, restore};
+}
+
+function makePoint(x, y)
+{
+    return {x, y, params: [x, y]};
+}
+
+function makeRect(p1, p2)
+{
+    const corner = (fn) => makePoint(fn(p1.x, p2.x), fn(p1.y, p2.y));
+    const lo = corner(Math.min);
+    const hi = corner(Math.max);
+    const width = hi.x - lo.x;
+    const height = hi.y - lo.y;
+    const params = [lo.x, lo.y, width, height];
+    const contains = (p) => p.x >= lo.x && p.y >= lo.y && p.x < hi.x && p.y < hi.y;
+
+    return {p1, p2, lo, hi, width, height, params, contains};
 }
 
 function assert(cond)
