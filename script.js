@@ -4,7 +4,7 @@ function init()
 {
     // Initialize the screen to black
     const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", {alpha: false, willReadFrequently: true});
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     ctx.strokeStyle = "white";
