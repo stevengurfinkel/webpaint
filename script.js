@@ -69,10 +69,45 @@ function init()
         ctx.lineTo(...r.p2.params);
     };
 
+    const select = (actions) => {
+        let downPt = null;
+        let srcRect = null;
+
+        const updateSrc = (p2) => {
+            srcRect = makeRect(downPt, p2);
+        };
+
+        const draw = () => {
+            actions.reset();
+            ctx.setLineDash([2, 2]);
+            ctx.strokeRect(...srcRect.params);
+            ctx.setLineDash([]);
+        };
+
+        const down = (p) => {
+            downPt = p;
+            if (srcRect !== null && !srcRect.contains(p)) {
+                actions.abort();
+            }
+        };
+
+        const move = (p) => {
+            updateSrc(p);
+            draw();
+        };
+
+        const up = (p) => {
+            updateSrc(p);
+            draw();
+        };
+        return {down, move, up};
+    };
+
     dispatch(ctx,
              pen,
              {KeyP: pen,
               KeyR: shape(rect),
               KeyE: shape(ellipse),
-              KeyL: shape(line)});
+              KeyL: shape(line),
+              KeyS: select});
 }
