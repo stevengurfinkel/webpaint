@@ -6,6 +6,10 @@ function makeHistory(ctx)
     let lastImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const stack = [];
 
+    const reset = () => {
+        ctx.putImageData(lastImage, 0, 0);
+    };
+
     const save = () => {
         const base = ctx.getImageData(0, 0, canvas.width, canvas.height);
         stack.push(makeDiff(base.data, lastImage.data));
@@ -57,5 +61,5 @@ function makeHistory(ctx)
     };
 
     // return public methods
-    return {save, restore};
+    return {save, restore, reset};
 }

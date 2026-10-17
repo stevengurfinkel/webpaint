@@ -8,8 +8,7 @@ function dispatch(ctx, toolFn, toolFns)
     let isButtonPressed = false;
 
     const reset = () => {
-        history.restore();
-        history.save();
+        history.reset();
     };
 
     const abort = () => {
