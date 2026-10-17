@@ -55,7 +55,9 @@ function dispatch(ctx, toolFn, toolFns)
         const newToolFn = toolFns[e.code];
 
         if (e.ctrlKey && e.code === "KeyZ") {
-            history.restore();
+            if (tool === null) {
+                history.restore();
+            }
         }
         else if (newToolFn !== undefined) {
             toolFn = newToolFn;
