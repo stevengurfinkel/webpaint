@@ -100,6 +100,7 @@ function init()
         const upSrc = (p) => {
             updateSrc(p);
             if (srcRect.width > 0 && srcRect.height > 0) {
+                actions.reset();
                 imageData = ctx.getImageData(...srcRect.params);
                 dstRect = srcRect;
                 curTool.down = downDrag;
@@ -113,9 +114,13 @@ function init()
         let clickOffset = null;
         let imageData = null;
 
-        const drawDst = () => {
+        const drawDst = (isComplete) => {
             actions.reset();
-            drawRect(dstRect);
+            ctx.fillRect(...srcRect.params);
+            ctx.putImageData(imageData, ...dstRect.lo.params);
+            if (!isComplete) {
+                drawRect(dstRect);
+            }
         };
 
         const updateDst = (p) => {
@@ -132,19 +137,20 @@ function init()
                 clickOffset = {x: p.x - dstRect.lo.x, y: p.y - dstRect.lo.y};
             }
             else {
-                actions.abort();
+                drawDst(true);
+                actions.complete();
             }
         };
 
         const moveDrag = (p) => {
             updateDst(p);
-            drawDst();
+            drawDst(false);
         };
 
         const upDrag = (p) => {
             updateDst(p);
             clickOffset = null;
-            drawDst();
+            drawDst(false);
         };
 
         const curTool = {down: downSrc, move: moveSrc, up: upSrc};
