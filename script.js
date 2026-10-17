@@ -7,6 +7,7 @@ function init()
     const ctx = canvas.getContext("2d", {alpha: false, willReadFrequently: true});
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    const colors = {fg: null, bg: null};
     ctx.strokeStyle = "white";
 
     const pen = (actions) => {
@@ -17,6 +18,7 @@ function init()
         };
 
         const move = (p) => {
+            ctx.strokeStyle = colors.fg;
             ctx.beginPath();
             ctx.moveTo(...start.params);
             ctx.lineTo(...p.params);
@@ -40,6 +42,7 @@ function init()
             };
 
             const move = (p) => {
+                ctx.strokeStyle = colors.fg;
                 actions.reset();
                 ctx.beginPath();
                 draw(makeRect(start, p));
@@ -69,11 +72,19 @@ function init()
         ctx.lineTo(...r.p2.params);
     };
 
+    document.getElementById("fgcolor").addEventListener("input", (e) => {
+        colors.fg = e.target.value;
+    });
+
+    document.getElementById("bgcolor").addEventListener("input", (e) => {
+        colors.bg = e.target.value;
+    });
+
     dispatch(ctx,
              pen,
              {KeyP: pen,
               KeyR: shape(rect),
               KeyE: shape(ellipse),
               KeyL: shape(line),
-              KeyS: select(ctx)});
+              KeyS: select(ctx, colors)});
 }

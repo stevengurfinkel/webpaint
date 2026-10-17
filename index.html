@@ -10,7 +10,23 @@
 </head>
 <body onload="init();" bgcolor="#202020">
   <center>
-    <canvas id="canvas" width="1200" height="800" />
+    <canvas id="canvas" width="1200" height="800"></canvas>
+    <br />
+    <div style="background-color: white; width: 1200px; text-align: left;">
+      <label for="fgcolor">Foreground Color</label>
+      <input type="color" id="fgcolor" value="#ffffff"></input>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <label for="bgcolor">Background Color</label>
+      <input type="color" id="bgcolor" value="#000000"></input>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <label for="width">width</label>
+      <input type="number" id="width" value="1200" style="width: 40pt;"></input>
+      &nbsp;&nbsp;
+      <label for="height">height</label>
+      <input type="number" id="height" value="800" style="width: 40pt;"></input>
+      &nbsp;&nbsp;
+      <input type="button" id="apply-size" value="Apply"></input>
+    </div>
   </center>
 </body>
 </html>

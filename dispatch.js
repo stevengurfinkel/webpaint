@@ -52,27 +52,34 @@ function dispatch(ctx, toolFn, toolFns)
 
     const keydown = (e) => {
         const newToolFn = toolFns[e.code];
+        let shouldPreventDefault = false;
 
         if (e.ctrlKey && e.code === "KeyZ") {
             if (tool === null) {
                 history.restore();
             }
+            shouldPreventDefault = true;
         }
         else if (newToolFn !== undefined) {
             toolFn = newToolFn;
+            shouldPreventDefault = true;
         }
 
         if ((e.code === "Escape" || newToolFn !== undefined) && tool !== null) {
             abort();
         }
+
+        if (shouldPreventDefault) {
+            e.preventDefault();
+        }
     };
 
-    const register = (str, fn, element = canvas) => {
-        element.addEventListener(str, (e) => { fn(e); e.preventDefault(); });
+    const register = (str, fn) => {
+        canvas.addEventListener(str, (e) => {fn(e); e.preventDefault();});
     };
 
     register("mousedown", mousedown);
     register("mouseup", mouseup);
     register("mousemove", mousemove);
-    register("keydown", keydown, window);
+    window.addEventListener("keydown", keydown);
 }

@@ -1,6 +1,6 @@
 "use strict";
 
-function select(ctx) {
+function select(ctx, colors) {
     return (actions) => {
         let srcStartPt = null;
         let srcRect = null;
@@ -11,6 +11,7 @@ function select(ctx) {
 
         const drawRect = (r) => {
             ctx.setLineDash([2, 2]);
+            ctx.strokeStyle = "white";
             ctx.strokeRect(...r.params);
             ctx.setLineDash([]);
         };
@@ -48,6 +49,7 @@ function select(ctx) {
 
         const drawDst = (isComplete) => {
             actions.reset();
+            ctx.fillStyle = colors.bg;
             ctx.fillRect(...srcRect.params);
             ctx.putImageData(imageData, ...dstRect.lo.params);
             if (!isComplete) {
