@@ -18,6 +18,11 @@ function makeRect(p1, p2)
     return {p1, p2, lo, hi, width, height, params, contains};
 }
 
+function makeRectFromParams(x, y, width, height)
+{
+    return makeRect(makePoint(x, y), makePoint(x + width, y + height));
+}
+
 function assert(cond)
 {
     if (!cond) {

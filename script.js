@@ -70,37 +70,86 @@ function init()
     };
 
     const select = (actions) => {
-        let downPt = null;
+        let srcStartPt = null;
         let srcRect = null;
 
-        const updateSrc = (p2) => {
-            srcRect = makeRect(downPt, p2);
+        const updateSrc = (srcEndPt) => {
+            srcRect = makeRect(srcStartPt, srcEndPt);
         };
 
-        const draw = () => {
-            actions.reset();
+        const drawRect = (r) => {
             ctx.setLineDash([2, 2]);
-            ctx.strokeRect(...srcRect.params);
+            ctx.strokeRect(...r.params);
             ctx.setLineDash([]);
         };
 
-        const down = (p) => {
-            downPt = p;
-            if (srcRect !== null && !srcRect.contains(p)) {
+        const drawSrc = () => {
+            actions.reset();
+            drawRect(srcRect);
+        };
+
+        const downSrc = (p) => {
+            srcStartPt = p;
+        };
+
+        const moveSrc = (p) => {
+            updateSrc(p);
+            drawSrc();
+        };
+
+        const upSrc = (p) => {
+            updateSrc(p);
+            if (srcRect.width > 0 && srcRect.height > 0) {
+                imageData = ctx.getImageData(...srcRect.params);
+                dstRect = srcRect;
+                curTool.down = downDrag;
+                curTool.move = moveDrag;
+                curTool.up = upDrag;
+            }
+            drawSrc();
+        };
+
+        let dstRect = null;
+        let clickOffset = null;
+        let imageData = null;
+
+        const drawDst = () => {
+            actions.reset();
+            drawRect(dstRect);
+        };
+
+        const updateDst = (p) => {
+            if (clickOffset !== null) {
+                dstRect = makeRectFromParams(p.x - clickOffset.x,
+                                             p.y - clickOffset.y,
+                                             imageData.width,
+                                             imageData.height);
+            }
+        };
+
+        const downDrag = (p) => {
+            if (dstRect.contains(p)) {
+                clickOffset = {x: p.x - dstRect.lo.x, y: p.y - dstRect.lo.y};
+            }
+            else {
                 actions.abort();
             }
         };
 
-        const move = (p) => {
-            updateSrc(p);
-            draw();
+        const moveDrag = (p) => {
+            updateDst(p);
+            drawDst();
         };
 
-        const up = (p) => {
-            updateSrc(p);
-            draw();
+        const upDrag = (p) => {
+            updateDst(p);
+            clickOffset = null;
+            drawDst();
         };
-        return {down, move, up};
+
+        const curTool = {down: downSrc, move: moveSrc, up: upSrc};
+
+        return curTool;
     };
 
     dispatch(ctx,
