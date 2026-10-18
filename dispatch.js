@@ -74,12 +74,26 @@ function dispatch(ctx, toolFn, toolFns)
         }
     };
 
+    const control = controller();
+
     const register = (str, fn) => {
-        canvas.addEventListener(str, (e) => {fn(e); e.preventDefault();});
+        control.register(canvas, str, (e) => {fn(e); e.preventDefault();});
     };
 
     register("mousedown", mousedown);
     register("mouseup", mouseup);
     register("mousemove", mousemove);
-    window.addEventListener("keydown", keydown);
+    control.register(window, "keydown", keydown);
+
+    return control;
 }
+
+function controller()
+{
+    const ctrl = new AbortController();
+    const register = (element, name, fn) => {
+        element.addEventListener(name, fn, {signal: ctrl.signal});
+    };
+
+    return {register, unregisterAll: ctrl.abort};
+};

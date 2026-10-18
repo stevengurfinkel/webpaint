@@ -84,19 +84,19 @@ function init()
         ctx.lineTo(...r.p2.params);
     };
 
-    document.getElementById("fgcolor").addEventListener("input", (e) => {
+    const ctrl = dispatch(ctx,
+                          pen,
+                          {KeyP: pen,
+                           KeyR: shape(rect),
+                           KeyE: shape(ellipse),
+                           KeyL: shape(line, false),
+                           KeyS: select(ctx, colors)});
+
+    ctrl.register(document.getElementById("fgcolor"), "input", (e) => {
         colors.fg = e.target.value;
     });
 
-    document.getElementById("bgcolor").addEventListener("input", (e) => {
+    ctrl.register(document.getElementById("bgcolor"), "input", (e) => {
         colors.bg = e.target.value;
     });
-
-    dispatch(ctx,
-             pen,
-             {KeyP: pen,
-              KeyR: shape(rect),
-              KeyE: shape(ellipse),
-              KeyL: shape(line, false),
-              KeyS: select(ctx, colors)});
 }
