@@ -7,8 +7,19 @@ function init()
     const ctx = canvas.getContext("2d", {alpha: false, willReadFrequently: true});
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const colors = {fg: null, bg: null};
-    ctx.strokeStyle = "white";
+    const colors = {fg: "#ffffff", bg: "#000000"};
+
+    const endPath = (() => {
+        const checkbox = document.getElementById("fill");
+        return (allowFill) => {
+            if (allowFill && checkbox.checked) {
+                ctx.fill();
+            }
+            else {
+                ctx.stroke();
+            }
+        };
+    })();
 
     const pen = (actions) => {
         let start = null;
@@ -33,7 +44,7 @@ function init()
         return {down, move, up};
     };
 
-    const shape = (draw) => {
+    const shape = (draw, allowFill = true) => {
         return (actions) => {
             let start = null;
 
@@ -43,10 +54,11 @@ function init()
 
             const move = (p) => {
                 ctx.strokeStyle = colors.fg;
+                ctx.fillStyle = colors.fg;
                 actions.reset();
                 ctx.beginPath();
                 draw(makeRect(start, p));
-                ctx.stroke();
+                endPath(allowFill);
             };
 
             const up = (p) => {
@@ -58,7 +70,7 @@ function init()
     };
 
     const rect = (r) => {
-        ctx.strokeRect(...r.params);
+        ctx.rect(...r.params);
     };
 
     const ellipse = (r) => {
@@ -85,6 +97,6 @@ function init()
              {KeyP: pen,
               KeyR: shape(rect),
               KeyE: shape(ellipse),
-              KeyL: shape(line),
+              KeyL: shape(line, false),
               KeyS: select(ctx, colors)});
 }
